@@ -62,6 +62,12 @@ const VintedFavoritesApp = () => {
       const response = await fetch(API_BASE_URL);
       if (!response.ok) throw new Error('Erreur lors du chargement');
       const data = await response.json();
+      // Debug: affiche la structure des données pour vérifier les champs photo
+      console.log('Données favorites reçues:', data);
+      if (data.length > 0) {
+        console.log('Structure d\'un favori:', Object.keys(data[0]));
+        console.log('Premier favori complet:', data[0]);
+      }
       setFavorites(data);
       setError(null);
     } catch (err) {
@@ -872,14 +878,37 @@ const VintedFavoritesApp = () => {
               gap: '24px'
             }}>
               {filteredFavorites.map((favorite, index) => (
-                <div 
-                  key={favorite.id} 
+                <div
+                  key={favorite.id}
                   className="card-dark animate-in-left"
                   style={{
                     padding: '24px',
                     animationDelay: `${index * 0.05}s`
                   }}
                 >
+                  {/* Photo du favori - supporte plusieurs noms de champs */}
+                  {(favorite.photoUrl || favorite.photo || favorite.imageUrl || (favorite.photos && favorite.photos[0])) && (
+                    <div style={{
+                      marginBottom: '16px',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      background: 'rgba(0, 0, 0, 0.3)'
+                    }}>
+                      <img
+                        src={favorite.photoUrl || favorite.photo || favorite.imageUrl || (favorite.photos && favorite.photos[0])}
+                        alt={favorite.titre}
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                          display: 'block'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                   <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
