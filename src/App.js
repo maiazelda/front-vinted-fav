@@ -20,24 +20,24 @@ const VintedFavoritesApp = () => {
   
   // Filtres
   const [filters, setFilters] = useState({
-    marque: '',
-    genre: '',
-    categorie: '',
-    vendu: ''
+    brand: '',
+    gender: '',
+    category: '',
+    sold: ''
   });
   
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [editingFavorite, setEditingFavorite] = useState(null);
   const [formData, setFormData] = useState({
-    titre: '',
-    marque: '',
-    prix: '',
-    taille: '',
-    genre: '',
-    categorie: '',
-    url: '',
-    vendu: false
+    title: '',
+    brand: '',
+    price: '',
+    size: '',
+    gender: '',
+    category: '',
+    productUrl: '',
+    sold: false
   });
 
   // ========================================
@@ -62,12 +62,6 @@ const VintedFavoritesApp = () => {
       const response = await fetch(API_BASE_URL);
       if (!response.ok) throw new Error('Erreur lors du chargement');
       const data = await response.json();
-      // Debug: affiche la structure des données pour vérifier les champs photo
-      console.log('Données favorites reçues:', data);
-      if (data.length > 0) {
-        console.log('Structure d\'un favori:', Object.keys(data[0]));
-        console.log('Premier favori complet:', data[0]);
-      }
       setFavorites(data);
       setError(null);
     } catch (err) {
@@ -126,33 +120,33 @@ const VintedFavoritesApp = () => {
   
   const applyFilters = () => {
     let result = [...favorites];
-    
-    if (filters.marque) {
-      result = result.filter(fav => 
-        fav.marque?.toLowerCase().includes(filters.marque.toLowerCase())
+
+    if (filters.brand) {
+      result = result.filter(fav =>
+        fav.brand?.toLowerCase().includes(filters.brand.toLowerCase())
       );
     }
-    if (filters.genre) {
-      result = result.filter(fav => fav.genre === filters.genre);
+    if (filters.gender) {
+      result = result.filter(fav => fav.gender === filters.gender);
     }
-    if (filters.categorie) {
-      result = result.filter(fav => 
-        fav.categorie?.toLowerCase().includes(filters.categorie.toLowerCase())
+    if (filters.category) {
+      result = result.filter(fav =>
+        fav.category?.toLowerCase().includes(filters.category.toLowerCase())
       );
     }
-    if (filters.vendu !== '') {
-      result = result.filter(fav => fav.vendu === (filters.vendu === 'true'));
+    if (filters.sold !== '') {
+      result = result.filter(fav => fav.sold === (filters.sold === 'true'));
     }
-    
+
     setFilteredFavorites(result);
   };
 
   const resetFilters = () => {
     setFilters({
-      marque: '',
-      genre: '',
-      categorie: '',
-      vendu: ''
+      brand: '',
+      gender: '',
+      category: '',
+      sold: ''
     });
   };
 
@@ -163,14 +157,14 @@ const VintedFavoritesApp = () => {
   const openAddModal = () => {
     setEditingFavorite(null);
     setFormData({
-      titre: '',
-      marque: '',
-      prix: '',
-      taille: '',
-      genre: '',
-      categorie: '',
-      url: '',
-      vendu: false
+      title: '',
+      brand: '',
+      price: '',
+      size: '',
+      gender: '',
+      category: '',
+      productUrl: '',
+      sold: false
     });
     setShowModal(true);
   };
@@ -178,14 +172,14 @@ const VintedFavoritesApp = () => {
   const openEditModal = (favorite) => {
     setEditingFavorite(favorite);
     setFormData({
-      titre: favorite.titre || '',
-      marque: favorite.marque || '',
-      prix: favorite.prix || '',
-      taille: favorite.taille || '',
-      genre: favorite.genre || '',
-      categorie: favorite.categorie || '',
-      url: favorite.url || '',
-      vendu: favorite.vendu || false
+      title: favorite.title || '',
+      brand: favorite.brand || '',
+      price: favorite.price || '',
+      size: favorite.size || '',
+      gender: favorite.gender || '',
+      category: favorite.category || '',
+      productUrl: favorite.productUrl || '',
+      sold: favorite.sold || false
     });
     setShowModal(true);
   };
@@ -208,17 +202,17 @@ const VintedFavoritesApp = () => {
   // EXTRACTION DES VALEURS UNIQUES
   // ========================================
   
-  const uniqueGenres = [...new Set(favorites.map(f => f.genre).filter(Boolean))];
-  const uniqueMarques = [...new Set(favorites.map(f => f.marque).filter(Boolean))];
-  const uniqueCategories = [...new Set(favorites.map(f => f.categorie).filter(Boolean))];
+  const uniqueGenres = [...new Set(favorites.map(f => f.gender).filter(Boolean))];
+  const uniqueMarques = [...new Set(favorites.map(f => f.brand).filter(Boolean))];
+  const uniqueCategories = [...new Set(favorites.map(f => f.category).filter(Boolean))];
 
   // Statistiques pour la sidebar
   const stats = {
     total: favorites.length,
-    disponibles: favorites.filter(f => !f.vendu).length,
-    vendus: favorites.filter(f => f.vendu).length,
-    prixMoyen: favorites.length > 0 
-      ? (favorites.reduce((acc, f) => acc + (parseFloat(f.prix) || 0), 0) / favorites.length).toFixed(2)
+    disponibles: favorites.filter(f => !f.sold).length,
+    vendus: favorites.filter(f => f.sold).length,
+    prixMoyen: favorites.length > 0
+      ? (favorites.reduce((acc, f) => acc + (parseFloat(f.price) || 0), 0) / favorites.length).toFixed(2)
       : 0
   };
 
@@ -631,20 +625,20 @@ const VintedFavoritesApp = () => {
           </h3>
           <div
             className="sidebar-item"
-            onClick={() => setFilters({...filters, genre: ''})}
-            style={{ color: filters.genre === '' ? '#00ff9d' : '#e4e7eb' }}
+            onClick={() => setFilters({...filters, gender: ''})}
+            style={{ color: filters.gender === '' ? '#00ff9d' : '#e4e7eb' }}
           >
             <Grid size={16} />
             Tous
           </div>
-          {uniqueGenres.map(genre => (
+          {uniqueGenres.map(gender => (
             <div
-              key={genre}
+              key={gender}
               className="sidebar-item"
-              onClick={() => setFilters({...filters, genre})}
-              style={{ color: filters.genre === genre ? '#00ff9d' : '#e4e7eb' }}
+              onClick={() => setFilters({...filters, gender})}
+              style={{ color: filters.gender === gender ? '#00ff9d' : '#e4e7eb' }}
             >
-              {genre}
+              {gender}
             </div>
           ))}
         </div>
@@ -667,20 +661,20 @@ const VintedFavoritesApp = () => {
           </h3>
           <div
             className="sidebar-item"
-            onClick={() => setFilters({...filters, marque: ''})}
-            style={{ color: filters.marque === '' ? '#00ff9d' : '#e4e7eb' }}
+            onClick={() => setFilters({...filters, brand: ''})}
+            style={{ color: filters.brand === '' ? '#00ff9d' : '#e4e7eb' }}
           >
             <Grid size={16} />
             Toutes
           </div>
-          {uniqueMarques.slice(0, 8).map(marque => (
+          {uniqueMarques.slice(0, 8).map(brand => (
             <div
-              key={marque}
+              key={brand}
               className="sidebar-item"
-              onClick={() => setFilters({...filters, marque})}
-              style={{ color: filters.marque === marque ? '#00ff9d' : '#e4e7eb' }}
+              onClick={() => setFilters({...filters, brand})}
+              style={{ color: filters.brand === brand ? '#00ff9d' : '#e4e7eb' }}
             >
-              {marque}
+              {brand}
             </div>
           ))}
         </div>
@@ -703,8 +697,8 @@ const VintedFavoritesApp = () => {
           </h3>
           <div
             className="sidebar-item"
-            onClick={() => setFilters({...filters, categorie: ''})}
-            style={{ color: filters.categorie === '' ? '#00ff9d' : '#e4e7eb' }}
+            onClick={() => setFilters({...filters, category: ''})}
+            style={{ color: filters.category === '' ? '#00ff9d' : '#e4e7eb' }}
           >
             <Grid size={16} />
             Toutes
@@ -713,8 +707,8 @@ const VintedFavoritesApp = () => {
             <div
               key={cat}
               className="sidebar-item"
-              onClick={() => setFilters({...filters, categorie: cat})}
-              style={{ color: filters.categorie === cat ? '#00ff9d' : '#e4e7eb' }}
+              onClick={() => setFilters({...filters, category: cat})}
+              style={{ color: filters.category === cat ? '#00ff9d' : '#e4e7eb' }}
             >
               {cat}
             </div>
@@ -735,23 +729,23 @@ const VintedFavoritesApp = () => {
           </h3>
           <div
             className="sidebar-item"
-            onClick={() => setFilters({...filters, vendu: ''})}
-            style={{ color: filters.vendu === '' ? '#00ff9d' : '#e4e7eb' }}
+            onClick={() => setFilters({...filters, sold: ''})}
+            style={{ color: filters.sold === '' ? '#00ff9d' : '#e4e7eb' }}
           >
             <Grid size={16} />
             Tous
           </div>
           <div
             className="sidebar-item"
-            onClick={() => setFilters({...filters, vendu: 'false'})}
-            style={{ color: filters.vendu === 'false' ? '#00ff9d' : '#e4e7eb' }}
+            onClick={() => setFilters({...filters, sold: 'false'})}
+            style={{ color: filters.sold === 'false' ? '#00ff9d' : '#e4e7eb' }}
           >
             Disponible
           </div>
           <div
             className="sidebar-item"
-            onClick={() => setFilters({...filters, vendu: 'true'})}
-            style={{ color: filters.vendu === 'true' ? '#00ff9d' : '#e4e7eb' }}
+            onClick={() => setFilters({...filters, sold: 'true'})}
+            style={{ color: filters.sold === 'true' ? '#00ff9d' : '#e4e7eb' }}
           >
             Vendu
           </div>
@@ -886,8 +880,8 @@ const VintedFavoritesApp = () => {
                     animationDelay: `${index * 0.05}s`
                   }}
                 >
-                  {/* Photo du favori - supporte plusieurs noms de champs */}
-                  {(favorite.photoUrl || favorite.photo || favorite.imageUrl || (favorite.photos && favorite.photos[0])) && (
+                  {/* Photo du favori */}
+                  {favorite.imageUrl && (
                     <div style={{
                       marginBottom: '16px',
                       borderRadius: '4px',
@@ -895,8 +889,8 @@ const VintedFavoritesApp = () => {
                       background: 'rgba(0, 0, 0, 0.3)'
                     }}>
                       <img
-                        src={favorite.photoUrl || favorite.photo || favorite.imageUrl || (favorite.photos && favorite.photos[0])}
-                        alt={favorite.titre}
+                        src={favorite.imageUrl}
+                        alt={favorite.title}
                         style={{
                           width: '100%',
                           height: '200px',
@@ -924,10 +918,10 @@ const VintedFavoritesApp = () => {
                       fontFamily: '"Rajdhani", sans-serif',
                       letterSpacing: '0.5px'
                     }}>
-                      {favorite.titre}
+                      {favorite.title}
                     </h3>
-                    <span className={favorite.vendu ? 'badge-dark badge-sold-dark' : 'badge-dark badge-available-dark'}>
-                      {favorite.vendu ? 'Vendu' : 'Dispo'}
+                    <span className={favorite.sold ? 'badge-dark badge-sold-dark' : 'badge-dark badge-available-dark'}>
+                      {favorite.sold ? 'Vendu' : 'Dispo'}
                     </span>
                   </div>
 
@@ -957,7 +951,7 @@ const VintedFavoritesApp = () => {
                           Marque
                         </span>
                         <div style={{ color: '#e4e7eb', fontWeight: 600 }}>
-                          {favorite.marque || 'N/A'}
+                          {favorite.brand || 'N/A'}
                         </div>
                       </div>
                       <div>
@@ -978,7 +972,7 @@ const VintedFavoritesApp = () => {
                           color: '#00ff9d',
                           fontFamily: '"Rajdhani", sans-serif'
                         }}>
-                          {favorite.prix ? `${favorite.prix}€` : 'N/A'}
+                          {favorite.price ? `${favorite.price}€` : 'N/A'}
                         </div>
                       </div>
                       <div>
@@ -994,7 +988,7 @@ const VintedFavoritesApp = () => {
                           Taille
                         </span>
                         <div style={{ color: '#e4e7eb', fontWeight: 600 }}>
-                          {favorite.taille || 'N/A'}
+                          {favorite.size || 'N/A'}
                         </div>
                       </div>
                       <div>
@@ -1010,11 +1004,11 @@ const VintedFavoritesApp = () => {
                           Genre
                         </span>
                         <div style={{ color: '#e4e7eb', fontWeight: 600 }}>
-                          {favorite.genre || 'N/A'}
+                          {favorite.gender || 'N/A'}
                         </div>
                       </div>
                     </div>
-                    {favorite.categorie && (
+                    {favorite.category && (
                       <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
                         <span style={{
                           display: 'block',
@@ -1028,7 +1022,7 @@ const VintedFavoritesApp = () => {
                           Catégorie
                         </span>
                         <div style={{ color: '#e4e7eb', fontWeight: 600 }}>
-                          {favorite.categorie}
+                          {favorite.category}
                         </div>
                       </div>
                     )}
@@ -1038,9 +1032,9 @@ const VintedFavoritesApp = () => {
                     display: 'flex',
                     gap: '8px'
                   }}>
-                    {favorite.url && (
+                    {favorite.productUrl && (
                       <a
-                        href={favorite.url}
+                        href={favorite.productUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -1204,8 +1198,8 @@ const VintedFavoritesApp = () => {
                   <input
                     type="text"
                     required
-                    value={formData.titre}
-                    onChange={(e) => setFormData({...formData, titre: e.target.value})}
+                    value={formData.title}
+                    onChange={(e) => setFormData({...formData, title: e.target.value})}
                     placeholder="Ex: Veste en jean vintage"
                   />
                 </div>
@@ -1226,17 +1220,17 @@ const VintedFavoritesApp = () => {
                     </label>
                     <input
                       type="text"
-                      value={formData.marque}
-                      onChange={(e) => setFormData({...formData, marque: e.target.value})}
+                      value={formData.brand}
+                      onChange={(e) => setFormData({...formData, brand: e.target.value})}
                       placeholder="Ex: Levi's"
                     />
                   </div>
 
                   <div>
-                    <label style={{ 
-                      display: 'block', 
-                      marginBottom: '8px', 
-                      fontSize: '11px', 
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '11px',
                       fontWeight: 600,
                       color: 'rgba(228, 231, 235, 0.7)',
                       textTransform: 'uppercase',
@@ -1248,8 +1242,8 @@ const VintedFavoritesApp = () => {
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.prix}
-                      onChange={(e) => setFormData({...formData, prix: e.target.value})}
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
                       placeholder="Ex: 25.00"
                     />
                   </div>
@@ -1271,17 +1265,17 @@ const VintedFavoritesApp = () => {
                     </label>
                     <input
                       type="text"
-                      value={formData.taille}
-                      onChange={(e) => setFormData({...formData, taille: e.target.value})}
+                      value={formData.size}
+                      onChange={(e) => setFormData({...formData, size: e.target.value})}
                       placeholder="Ex: M, 38, L"
                     />
                   </div>
 
                   <div>
-                    <label style={{ 
-                      display: 'block', 
-                      marginBottom: '8px', 
-                      fontSize: '11px', 
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '8px',
+                      fontSize: '11px',
                       fontWeight: 600,
                       color: 'rgba(228, 231, 235, 0.7)',
                       textTransform: 'uppercase',
@@ -1291,8 +1285,8 @@ const VintedFavoritesApp = () => {
                       Genre
                     </label>
                     <select
-                      value={formData.genre}
-                      onChange={(e) => setFormData({...formData, genre: e.target.value})}
+                      value={formData.gender}
+                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
                     >
                       <option value="">Sélectionner</option>
                       <option value="Homme">Homme</option>
@@ -1318,17 +1312,17 @@ const VintedFavoritesApp = () => {
                   </label>
                   <input
                     type="text"
-                    value={formData.categorie}
-                    onChange={(e) => setFormData({...formData, categorie: e.target.value})}
+                    value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
                     placeholder="Ex: Vestes, Chaussures, Accessoires"
                   />
                 </div>
 
                 <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: '8px', 
-                    fontSize: '11px', 
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontSize: '11px',
                     fontWeight: 600,
                     color: 'rgba(228, 231, 235, 0.7)',
                     textTransform: 'uppercase',
@@ -1339,8 +1333,8 @@ const VintedFavoritesApp = () => {
                   </label>
                   <input
                     type="url"
-                    value={formData.url}
-                    onChange={(e) => setFormData({...formData, url: e.target.value})}
+                    value={formData.productUrl}
+                    onChange={(e) => setFormData({...formData, productUrl: e.target.value})}
                     placeholder="https://www.vinted.fr/..."
                   />
                 </div>
@@ -1356,13 +1350,13 @@ const VintedFavoritesApp = () => {
                 }}>
                   <input
                     type="checkbox"
-                    id="vendu"
-                    checked={formData.vendu}
-                    onChange={(e) => setFormData({...formData, vendu: e.target.checked})}
+                    id="sold"
+                    checked={formData.sold}
+                    onChange={(e) => setFormData({...formData, sold: e.target.checked})}
                     style={{ width: 'auto', cursor: 'pointer' }}
                   />
-                  <label 
-                    htmlFor="vendu"
+                  <label
+                    htmlFor="sold"
                     style={{ 
                       fontSize: '13px', 
                       fontWeight: 600,
