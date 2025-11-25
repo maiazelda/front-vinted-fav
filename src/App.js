@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Edit2, Trash2, ShoppingBag, AlertCircle, Menu, ChevronLeft, Tag, Users, Grid, TrendingUp } from 'lucide-react';
+import { Plus, X, Edit2, Trash2, ShoppingBag, AlertCircle, Menu, ChevronLeft, Tag, Users, Grid, TrendingUp, RefreshCw, Search } from 'lucide-react';
 
 // URL de votre API Spring Boot
 const API_BASE_URL = 'http://localhost:8080/api/favorites';
@@ -13,10 +13,14 @@ const VintedFavoritesApp = () => {
   const [filteredFavorites, setFilteredFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [syncing, setSyncing] = useState(false);
+
   // NOUVEAU : State pour la sidebar
   // Comme une variable boolean en Java qui contrôle l'affichage
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // State pour la recherche
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Filtres
   const [filters, setFilters] = useState({
@@ -50,7 +54,7 @@ const VintedFavoritesApp = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [favorites, filters]);
+  }, [favorites, filters, searchQuery]);
 
   // ========================================
   // FONCTIONS API
@@ -114,6 +118,22 @@ const VintedFavoritesApp = () => {
     }
   };
 
+  const syncVintedFavorites = async () => {
+    try {
+      setSyncing(true);
+      setError(null);
+      const response = await fetch(`${API_BASE_URL}/sync`, {
+        method: 'POST'
+      });
+      if (!response.ok) throw new Error('Erreur lors de la synchronisation');
+      await fetchFavorites();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   // ========================================
   // FONCTIONS DE FILTRAGE
   // ========================================
@@ -121,6 +141,18 @@ const VintedFavoritesApp = () => {
   const applyFilters = () => {
     let result = [...favorites];
 
+    // Recherche globale
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(fav =>
+        fav.title?.toLowerCase().includes(query) ||
+        fav.brand?.toLowerCase().includes(query) ||
+        fav.category?.toLowerCase().includes(query) ||
+        fav.gender?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filtres de sidebar
     if (filters.brand) {
       result = result.filter(fav =>
         fav.brand?.toLowerCase().includes(filters.brand.toLowerCase())
@@ -430,7 +462,16 @@ const VintedFavoritesApp = () => {
             transform: translateX(0);
           }
         }
-        
+
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
         .animate-in-left {
           animation: slideInLeft 0.4s ease-out forwards;
         }
@@ -784,7 +825,8 @@ const VintedFavoritesApp = () => {
           position: 'sticky',
           top: 0,
           zIndex: 50,
-          backdropFilter: 'blur(10px)'
+          backdropFilter: 'blur(10px)',
+          gap: '20px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {!sidebarOpen && (
@@ -823,12 +865,53 @@ const VintedFavoritesApp = () => {
               </p>
             </div>
           </div>
-          <button className="btn-dark btn-primary-dark" onClick={openAddModal}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Plus size={18} />
-              Ajouter
+
+          {/* Barre de recherche et bouton sync */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, maxWidth: '600px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search
+                size={18}
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'rgba(228, 231, 235, 0.4)'
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Rechercher un article..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px 12px 42px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '2px',
+                  color: '#e4e7eb',
+                  fontSize: '14px',
+                  fontFamily: '"Inter", sans-serif'
+                }}
+              />
             </div>
-          </button>
+            <button
+              className="btn-dark btn-primary-dark"
+              onClick={syncVintedFavorites}
+              disabled={syncing}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                opacity: syncing ? 0.6 : 1,
+                cursor: syncing ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <RefreshCw size={18} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
+              {syncing ? 'Sync...' : 'Synchroniser'}
+            </button>
+          </div>
         </div>
 
         {/* Erreur */}
@@ -1028,94 +1111,40 @@ const VintedFavoritesApp = () => {
                     )}
                   </div>
 
-                  <div style={{
-                    display: 'flex',
-                    gap: '8px'
-                  }}>
-                    {favorite.productUrl && (
-                      <a
-                        href={favorite.productUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          flex: 1,
-                          padding: '12px',
-                          background: 'rgba(0, 184, 255, 0.1)',
-                          color: '#00b8ff',
-                          textDecoration: 'none',
-                          borderRadius: '2px',
-                          textAlign: 'center',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '1px',
-                          transition: 'all 0.2s',
-                          border: '1px solid rgba(0, 184, 255, 0.3)',
-                          fontFamily: '"Roboto Mono", monospace'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.background = 'rgba(0, 184, 255, 0.2)';
-                          e.target.style.transform = 'translateY(-2px)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.background = 'rgba(0, 184, 255, 0.1)';
-                          e.target.style.transform = 'translateY(0)';
-                        }}
-                      >
-                        VOIR
-                      </a>
-                    )}
-                    <button
-                      onClick={() => openEditModal(favorite)}
+                  {favorite.productUrl && (
+                    <a
+                      href={favorite.productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       style={{
-                        padding: '12px 16px',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        width: '100%',
+                        padding: '12px',
+                        background: 'rgba(0, 184, 255, 0.1)',
+                        color: '#00b8ff',
+                        textDecoration: 'none',
                         borderRadius: '2px',
-                        cursor: 'pointer',
+                        textAlign: 'center',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
                         transition: 'all 0.2s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        border: '1px solid rgba(0, 184, 255, 0.3)',
+                        fontFamily: '"Roboto Mono", monospace',
+                        display: 'block'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.background = 'rgba(0, 255, 157, 0.1)';
-                        e.target.style.borderColor = 'rgba(0, 255, 157, 0.3)';
+                        e.target.style.background = 'rgba(0, 184, 255, 0.2)';
                         e.target.style.transform = 'translateY(-2px)';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.background = 'rgba(255, 255, 255, 0.05)';
-                        e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                        e.target.style.background = 'rgba(0, 184, 255, 0.1)';
                         e.target.style.transform = 'translateY(0)';
                       }}
                     >
-                      <Edit2 size={16} color="#00ff9d" />
-                    </button>
-                    <button
-                      onClick={() => deleteFavorite(favorite.id)}
-                      style={{
-                        padding: '12px 16px',
-                        background: 'rgba(255, 71, 87, 0.1)',
-                        border: '1px solid rgba(255, 71, 87, 0.3)',
-                        borderRadius: '2px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = 'rgba(255, 71, 87, 0.2)';
-                        e.target.style.transform = 'translateY(-2px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'rgba(255, 71, 87, 0.1)';
-                        e.target.style.transform = 'translateY(0)';
-                      }}
-                    >
-                      <Trash2 size={16} color="#ff4757" />
-                    </button>
-                  </div>
+                      VOIR SUR VINTED
+                    </a>
+                  )}
                 </div>
               ))}
             </div>
